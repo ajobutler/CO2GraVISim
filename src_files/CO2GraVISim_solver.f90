@@ -558,11 +558,10 @@ contains
 
 
       ! dh/dt prefactor - depends on sign of dh/dt, and where h_res>0
-      ct_inc = poro_h * h_inc_array *( (1 - C_sat)*(1 - s_a_i - s_c_r)*R_trap_array &
-      &                                      + (1 - s_a_i + C_sat*s_a_i)*u_array )
+      ct_inc = poro_h * h_inc_array *( (1._wp - C_sat)*(1._wp - s_a_i - s_c_r)*R_trap_array &
+      &                                      + (1._wp - s_a_i + C_sat*s_a_i)*u_array )
 
-      ct_dec = poro_h * h_dec_array *( (1 - s_a_i - s_c_r)*R_trap_array &
-      &                                      + (1 - s_a_i + C_sat*s_a_i)*u_array )
+      ct_dec = poro_h * h_dec_array *( (1._wp - s_a_i - s_c_r) )
 
       ct = ct_inc + ct_dec
 
@@ -600,13 +599,13 @@ contains
       real(wp), intent(in) :: dt_val
       real(wp) :: sigma
 
-      sigma = C_sat*(1._wp-s_a_i-s_c_r)/( s_c_r + C_sat*(1-s_c_r))
-      C_dissolve = 1._wp / (poro_h*( s_c_r + C_sat*(1-s_c_r) ))
+      sigma = C_sat*(1._wp-s_a_i-s_c_r)/( s_c_r + C_sat*(1._wp-s_c_r))
+      C_dissolve = 1._wp / (poro_h*( s_c_r + C_sat*(1._wp-s_c_r) ))
 
       !Locations where h is increasing, h is decreasing,
       !and where residually trapped CO2 is present
-      h_inc_array = merge(1._wp, 0._wp, h_cur >= h_prev)
-      h_dec_array = merge(1._wp, 0._wp, h_cur <  h_prev)
+      h_inc_array  = merge(1._wp, 0._wp, h_cur >= h_prev)
+      h_dec_array  = merge(1._wp, 0._wp, h_cur <  h_prev)
       R_trap_array = merge(1._wp, 0._wp, h_res >  0._wp )
 
 
@@ -724,7 +723,8 @@ contains
          au(0) = 0._wp
       else if (h_BC_params(3) == 2) then
          ! Neumann Boundary conditions - zero flux
-         ab(0) = - Gamma_val * (H0(1,0) - H0(0,0))
+         ! ab(0) = - Gamma_val * (H0(1,0) - H0(0,0))
+         ab(0) = 0._wp
          al(0) = 0._wp
          ad(0) = -1._wp
          au(0) = 1._wp
@@ -938,7 +938,7 @@ contains
       if (plot_count .le. np-1 .and. t >= tplot) then
 
          !Save data for current plot time
-         print '("[Save #", i4 ,"] t = ", f10.5 ,"")', plot_count, t
+         print '("[Save #", i4 ,"] t = ", f15.5 ,"")', plot_count, t
 
          h_array(:,:,plot_count)       = h_cur(:,:)
          h_res_array(:,:,plot_count)   = h_res_cur(:,:)
