@@ -15,9 +15,18 @@ import numpy as np
 # e.g. t_intervals = [0.,1.,3.,10.] and nplot_intervals = [3,3,2] will generate
 # t = [ 0., 0.5, 1.0, 2.0, 3.0, 10. ]
 
-t_intervals     = [ 0., 1., 3., 4., 10.]
-nplot_intervals = [   5,  5,  5,  8    ] 
+# t_intervals     = [ 0., 1., 3., 4., 10.]
+# nplot_intervals = [   5,  5,  5,  8    ] 
 
+# t_intervals     = [ 0., 1., 2., 3., 6., 7., 10.]
+# nplot_intervals = [   5,  3,  5,  3,  5,  4    ] 
+
+# t_intervals     = [ 0., 676.463, 266557.21 ]
+# # t_intervals     = [ 0., 676.463, 30218. ]
+# nplot_intervals = [   11, 10   ] 
+
+t_intervals = [ 0., 2.] #[ 0., 5.]
+nplot_intervals = [ 20 ]
 
 
 #Create the first interval

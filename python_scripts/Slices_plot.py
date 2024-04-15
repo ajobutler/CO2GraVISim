@@ -15,14 +15,49 @@ from matplotlib.ticker import FuncFormatter
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib import colors
 
+import argparse
+import os
+
+### Deal with inputs for input and output data folders ######################################
+
+# Initialize the argument parser
+parser = argparse.ArgumentParser(description='Input and Output data folders')
+
+# Add arguments for input and output folder with default values
+parser.add_argument('-input', type=str, default='./Input/',
+                    help='Input data folder path')
+parser.add_argument('-output', type=str, default='./Output/',
+                    help='Output data folder path')
+
+# Parse the arguments
+args = parser.parse_args()
+
+# Extract the input and output folder paths, and remove any trailing slashes
+input_folder = args.input.rstrip('/\\')
+output_folder = args.output.rstrip('/\\')
+
+
+# Ensure that the folders exist
+if not os.path.isdir(input_folder):
+    print(f"Error: The input folder {input_folder} does not exist.")
+    exit(1)
+if not os.path.isdir(output_folder):
+    print(f"Warning: The output folder {output_folder} does not exist.")
+    exit(1)
+
+
+print(f" Input folder : {input_folder}")
+print(f" Output folder: {output_folder}")
+
+#############################################################################################
 
 # Read in plot times
-plot_times = np.loadtxt("./Output/Other/plot_times.txt")
+plot_times = np.loadtxt(f"{output_folder}/Other/plot_times.txt")
 
 
 # load parameter values
 parameters = np.loadtxt(
-    "./Output/Other/parameter_values.txt"
+    f"{output_folder}/Other/parameter_values.txt"
 )  # nx ny dx dy M Gamma_val, s_c_r, s_a_i, C_sat, q_dissolve
 nx = int(parameters[0])
 ny = int(parameters[1])
@@ -44,7 +79,7 @@ Y_grid = np.arange(-(ny - 1) / 2.0, (ny - 1) / 2.0 + 1.0) * dy
 X, Y = np.meshgrid(X_grid, Y_grid)
 
 # load injection locations
-inj_locs_data = np.loadtxt("./Output/Other/injection_locations.txt")
+inj_locs_data = np.loadtxt(f"{output_folder}/Other/injection_locations.txt")
 
 if np.ndim(inj_locs_data) == 1:
     # If there's only one injection point, this needs to be done slightly differently
@@ -62,10 +97,10 @@ else:
 
 
 # Read in Topography, Porosity, and Permeability
-H0              = np.loadtxt("./Input/ceil_topo.txt")
-B0              = np.loadtxt("./Input/base_topo.txt")
-Porosity        = np.loadtxt("./Input/porosity.txt")
-Permeability    = np.loadtxt("./Input/permeability.txt")
+H0              = np.loadtxt(f"{input_folder}/ceil_topo.txt")
+B0              = np.loadtxt(f"{input_folder}/base_topo.txt")
+Porosity        = np.loadtxt(f"{input_folder}/porosity.txt")
+Permeability    = np.loadtxt(f"{input_folder}/permeability.txt")
 
 # Specify the colour maps for the permeability and porosity, and 
 # the numerical ranges to use for them
@@ -89,14 +124,14 @@ for i, t in enumerate(plot_times):
     if i == 0:
         h_array[:, :, i] = np.zeros([np.shape(H0)[0], np.shape(H0)[1]])
     else:
-        h_array[:, :, i] = np.loadtxt("./Output/Current_Thickness/h" + "{0:02d}".format(i) + ".txt")
+        h_array[:, :, i] = np.loadtxt(f"{output_folder}/Current_Thickness/h" + "{0:02d}".format(i) + ".txt")
 
     V_active_array[:, :, i] = Porosity * (1.0 - s_a_i) * h_array[:, :, i]
     h_res_array[:, :, i] = np.loadtxt(
-        "./Output/Current_Thickness/h_res" + "{0:02d}".format(i) + ".txt"
+        f"{output_folder}/Current_Thickness/h_res" + "{0:02d}".format(i) + ".txt"
     )
     P_array[:, :, i] = np.loadtxt(
-        "./Output/Current_Pressure/P" + "{0:02d}".format(i) + ".txt"
+        f"{output_folder}/Current_Pressure/P" + "{0:02d}".format(i) + ".txt"
     )
 
 
@@ -123,7 +158,9 @@ cbar_fmt = lambda x, pos: "{:.2f}".format(x)
 
 
 ## Main loop over each of the output plots
-for i, t in enumerate(plot_times):
+# Plot in reverse order, so we can see the final state sooner.
+for i in range(len(plot_times)-1,-1,-1):
+    t = plot_times[i]
     print("Plot " + str(i))
 
     # load height data for this frame
@@ -292,7 +329,7 @@ for i, t in enumerate(plot_times):
     ax_c.set_ylabel(r"$\max_{x}\{P(x,y,t)\}$", fontsize=20)
 
 
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
     # plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
 
     # Save this frame

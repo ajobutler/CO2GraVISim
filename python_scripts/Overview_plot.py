@@ -17,13 +17,50 @@ from matplotlib.ticker import FuncFormatter
 from matplotlib.gridspec import GridSpec
 import warnings
 
+
+import argparse
+import os
+
+### Deal with inputs for input and output data folders ######################################
+
+# Initialize the argument parser
+parser = argparse.ArgumentParser(description='Input and Output data folders')
+
+# Add arguments for input and output folder with default values
+parser.add_argument('-input', type=str, default='./Input/',
+                    help='Input data folder path')
+parser.add_argument('-output', type=str, default='./Output/',
+                    help='Output data folder path')
+
+# Parse the arguments
+args = parser.parse_args()
+
+# Extract the input and output folder paths, and remove any trailing slashes
+input_folder = args.input.rstrip('/\\')
+output_folder = args.output.rstrip('/\\')
+
+
+# Ensure that the folders exist
+if not os.path.isdir(input_folder):
+    print(f"Error: The input folder {input_folder} does not exist.")
+    exit(1)
+if not os.path.isdir(output_folder):
+    print(f"Warning: The output folder {output_folder} does not exist.")
+    exit(1)
+
+
+print(f" Input folder : {input_folder}")
+print(f" Output folder: {output_folder}")
+
+#############################################################################################
+
 # load plot times
-plot_times = np.loadtxt("./Output/Other/plot_times.txt")
+plot_times = np.loadtxt(f"{output_folder}/Other/plot_times.txt")
 
 
 # load parameter values
 parameters = np.loadtxt(
-    "./Output/Other/parameter_values.txt"
+    f"{output_folder}/Other/parameter_values.txt"
 )  # nx ny dx dy M Gamma_val, s_c_r, s_a_i, C_sat, q_dissolve
 nx = int(parameters[0])
 ny = int(parameters[1])
@@ -46,7 +83,7 @@ X, Y = np.meshgrid(X_grid, Y_grid)
 
 
 # load injection locations
-inj_locs_data = np.loadtxt("./Output/Other/injection_locations.txt")
+inj_locs_data = np.loadtxt(f"{output_folder}/Other/injection_locations.txt")
 
 if np.ndim(inj_locs_data) == 1:
     # If there's only one injection point, this needs to be done slightly differently
@@ -68,12 +105,12 @@ flow_field_step = 5
 
 
 # Reservoir Ceiling and Basement topography
-H0 = np.loadtxt("./Input/ceil_topo.txt")
-B0 = np.loadtxt("./Input/base_topo.txt")
+H0 = np.loadtxt(f"{input_folder}/ceil_topo.txt")
+B0 = np.loadtxt(f"{input_folder}/base_topo.txt")
 
 # Porosity and Permeability fields
-Porosity = np.loadtxt("./Input/porosity.txt")
-Permeability = np.loadtxt("./Input/permeability.txt")
+Porosity = np.loadtxt(f"{input_folder}/porosity.txt")
+Permeability = np.loadtxt(f"{input_folder}/permeability.txt")
 
 
 ## Load plot data into arrays
@@ -114,14 +151,14 @@ for i, t in enumerate(plot_times):
         h_array[:, :, i] = np.zeros([np.shape(H0)[0], np.shape(H0)[1]])
     else:
         h_array[:, :, i] = np.loadtxt(
-            "./Output/Current_Thickness/h" + "{0:02d}".format(i) + ".txt"
+            f"{output_folder}/Current_Thickness/h" + "{0:02d}".format(i) + ".txt"
         )
 
     h_res_array[:, :, i] = np.loadtxt(
-        "./Output/Current_Thickness/h_res" + "{0:02d}".format(i) + ".txt"
+        f"{output_folder}/Current_Thickness/h_res" + "{0:02d}".format(i) + ".txt"
     )
     P_amb_array[:, :, i] = np.loadtxt(
-        "./Output/Current_Pressure/P" + "{0:02d}".format(i) + ".txt"
+        f"{output_folder}/Current_Pressure/P" + "{0:02d}".format(i) + ".txt"
     )
 
     P_cur_array[:, :, i] = P_amb_array[:, :, i] + Gamma_val * (
@@ -173,7 +210,7 @@ max_abs_pressure = np.max(np.abs(P_amb_array))
 
 
 # Load the volume data recorded at each step, rather than just at the output times
-Volume_data = np.loadtxt("./Output/Other/Volumes.txt")
+Volume_data = np.loadtxt(f"{output_folder}/Other/Volumes.txt")
 Times = Volume_data[:, 0]
 Volumes_active = Volume_data[:, 1]
 Volumes_trapped = Volume_data[:, 2]
@@ -260,7 +297,9 @@ clr_h_res = "tab:brown"
 
 
 ## Main loop over each of the output plots
-for i, t in enumerate(plot_times):
+# Plot in reverse order, so we can see the final state sooner.
+for i in range(len(plot_times)-1,-1,-1):
+    t = plot_times[i]
     # If there are no contours (because the function is zero everywhere), supress the warning message
     with warnings.catch_warnings():
         warnings.filterwarnings(
@@ -319,8 +358,6 @@ for i, t in enumerate(plot_times):
 
         # Ambient Pressure colormap
         color_dimension_P_amb = P_amb
-        # minn, maxx = min_pressure, max_pressure
-        # minn, maxx = -max_abs_pressure, max_abs_pressure
         minn, maxx = -np.max(np.abs(P_amb)), np.max(np.abs(P_amb))
         norm_P_amb = colors.Normalize(minn, maxx)
         m = plt.cm.ScalarMappable(norm=norm_P_amb, cmap=colmap_P)
@@ -329,8 +366,6 @@ for i, t in enumerate(plot_times):
 
         # Current Pressure colormap
         color_dimension_P_cur = P_cur
-        # minn, maxx = min_pressure, max_pressure
-        # minn, maxx = -max_abs_pressure, max_abs_pressure
         minn, maxx = -np.max(np.abs(P_cur)), np.max(np.abs(P_cur))
         norm_P_cur = colors.Normalize(minn, maxx)
         m = plt.cm.ScalarMappable(norm=norm_P_cur, cmap=colmap_P)
@@ -428,7 +463,7 @@ for i, t in enumerate(plot_times):
             extent=[X_grid[0], X_grid[-1], Y_grid[0], Y_grid[-1]],
         )
         # contours of ceiling topography
-        cont_H0 = ax_c.contour(X_grid, Y_grid, H0, colors="gray", alpha=0.25, levels=4)
+        cont_H0 = ax_c.contour(X_grid, Y_grid, H0, colors="gray", alpha=0.25)
         # edge contour of active current
         cont_hb = ax_c.contour(
             X_grid,
@@ -488,7 +523,7 @@ for i, t in enumerate(plot_times):
             extent=[X_grid[0], X_grid[-1], Y_grid[0], Y_grid[-1]],
         )
         # contours of ceiling topography
-        cont_H0 = ax_c.contour(X_grid, Y_grid, H0, colors="gray", alpha=0.25, levels=4)
+        cont_H0 = ax_c.contour(X_grid, Y_grid, H0, colors="gray", alpha=0.25)
         # edge contour of trapped current
         cont_hresb = ax_c.contour(
             X_grid,
@@ -547,7 +582,7 @@ for i, t in enumerate(plot_times):
             extent=[X_grid[0], X_grid[-1], Y_grid[0], Y_grid[-1]],
         )
         # contours of ceiling topography
-        cont_H0 = ax_c.contour(X_grid, Y_grid, H0, colors="gray", alpha=0.25, levels=4)
+        cont_H0 = ax_c.contour(X_grid, Y_grid, H0, colors="gray", alpha=0.25)
         # edge contour of active current
         cont_hb = ax_c.contour(
             X_grid,
@@ -606,7 +641,7 @@ for i, t in enumerate(plot_times):
             extent=[X_grid[0], X_grid[-1], Y_grid[0], Y_grid[-1]],
         )
         # contours of ceiling topography
-        cont_H0 = ax_c.contour(X_grid, Y_grid, H0, colors="gray", alpha=0.25, levels=4)
+        cont_H0 = ax_c.contour(X_grid, Y_grid, H0, colors="gray", alpha=0.25)
         # edge contour of trapped current
         cont_hresb = ax_c.contour(
             X_grid,
@@ -802,7 +837,7 @@ for i, t in enumerate(plot_times):
         ax_c.grid(True, linestyle="-", alpha=0.5)
 
         #Tidy up the layout of subplots
-        plt.tight_layout()
+        plt.tight_layout(rect=[0, 0, 1, 0.95])
 
         # Save this frame
         plt.savefig("./plots/Overview_plot/temp/t" + "{0:02d}".format(i) + ".png")
