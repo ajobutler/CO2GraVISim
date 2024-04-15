@@ -14,17 +14,22 @@ module CO2GraVISim_injection_profiles
     real(wp), dimension(:),   allocatable :: t_flux_vals
 
 
-    !Input files
-    character(50)  ::  inj_locs_file = "./Input/injection_locations.txt"
-    character(50)  ::  inj_prof_file = "./Input/injection_profile.txt"
+    !Injection files are now passed to the subroutine below as inputs
+    !when called in CO2GraVISim_input_parameters
+    ! ! !Input files
+    ! ! character(50)  ::  inj_locs_file = "./Input/injection_locations.txt"
+    ! ! character(50)  ::  inj_prof_file = "./Input/injection_profile.txt"
 
 
     contains 
-    subroutine read_injection_data
+    subroutine read_injection_data(inj_locs_file,inj_prof_file)
 
         implicit none
         integer :: io, j
         real(wp), dimension(:,:), allocatable :: Q_flux_vals_array
+
+        character(len=*), intent(in)    ::  inj_locs_file
+        character(len=*), intent(in)    ::  inj_prof_file
 
         write(*,*) 'Reading in injection locations'
         !Read in parameters

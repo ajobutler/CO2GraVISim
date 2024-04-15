@@ -6,8 +6,8 @@ module CO2GraVISim_global
    integer, parameter  :: wp=selected_real_kind(8)
 
    !Solver parameters
-   integer, parameter  :: itermax         = 1e6       ! max number of iterations
-   real(wp), parameter :: tmax            = 1e4_wp    ! max run time
+   integer, parameter  :: itermax         = 1e9       ! max number of iterations
+   real(wp), parameter :: tmax            = 1e9_wp    ! max run time
    real(wp), parameter :: dt_init         = 1e-5_wp   ! initial timestep
    real(wp), parameter :: dt_min          = 1e-8_wp   ! min timestep
    real(wp), parameter :: errmax_t_step   = 1e-5_wp   ! max error allowed in timestep check

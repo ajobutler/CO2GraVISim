@@ -1,8 +1,8 @@
 module CO2GraVISim_solver
-   !This is the main solver for CO2GraVISim, calculating the mobile current thickness h, 
-   !the resdiually trapped current thickness h_res, and the ambient pressure Pa, for 
+   !This is the main solver for CO2GraVISim, calculating the mobile current thickness h,
+   !the resdiually trapped current thickness h_res, and the ambient pressure Pa, for
    !given inputs and at the specified plot times.
-   
+
 
    use CO2GraVISim_global !wp, iter_max, tmax, dt_init, dt_min, errmax_t_step, errmax_P_iter, P_iter_omega, t0
    use CO2GraVISim_input_parameters !H0, B0, D0, perm_h, poro_h
@@ -13,13 +13,12 @@ module CO2GraVISim_solver
 contains
 
    ! ------------------------------------------------------------------------
-   subroutine solver_run(h_array,h_res_array,P_array,plot_times,target_plot_times)
+   subroutine solver_run(h_array,h_res_array,P_array,plot_times)
 
       implicit none
       real(wp), dimension(0:nx-1,0:ny-1,0:np-1), intent(out) :: h_array, h_res_array, P_array
       real(wp), dimension(0:nx-1,0:ny-1) :: h, h_res, h_old, P, Q
       real(wp), dimension(0:np-1), intent(out) :: plot_times
-      real(wp), dimension(0:np-1), intent(in) :: target_plot_times
       real(wp) :: t, dt, dt_ideal, dt_new, tplot, start, finish, V_injected
       integer  :: it, plot_count, flux_idx
 
@@ -93,7 +92,7 @@ contains
 
          !Perform a calculation for this timestep
          call adaptive_timestepping(h_array, h_res_array, P_array, h, h_res, h_old, P, &
-         & t, dt_ideal, dt_new, tplot, target_plot_times, plot_times,&
+         & t, dt_ideal, dt_new, tplot, plot_times,&
          & Q, V_injected, dt, dt_min, plot_count)
 
          !Increment iteration counter
@@ -124,9 +123,8 @@ contains
 
 
    ! ------------------------------------------------------------------------
-   subroutine adaptive_timestepping(h_array, h_res_array, P_array,&
-   & h, h_res, h_old, P, t, dt_ideal, dt_new, tplot, target_plot_times, plot_times, &
-   & Q, V_injected, dt_old, dt_min_val, plot_count)
+   subroutine adaptive_timestepping(h_array, h_res_array, P_array, h, h_res, h_old, P, &
+   & t, dt_ideal, dt_new, tplot, plot_times, Q, V_injected, dt_old, dt_min_val, plot_count)
       ! This subroutine performs the calculation twice - from t to t+dt in one step, or in
       ! two half steps. The results are then kept and time advance if these two answers agree
       ! sufficiently, otherwise we will repeat the calculation with a smaller timestep (if possible)
@@ -136,7 +134,6 @@ contains
       real(wp), dimension(0:nx-1, 0:ny-1, 0:np-1), intent(inout) :: h_array, h_res_array, P_array
       real(wp), dimension(0:nx-1, 0:ny-1), intent(inout) :: h, h_res, h_old, P
       real(wp), dimension(0:np-1), intent(inout) :: plot_times
-      real(wp), dimension(0:np-1), intent(in) :: target_plot_times
       real(wp), intent(inout) :: V_injected
       real(wp), intent(in) :: dt_old, dt_min_val
       real(wp), intent(inout) :: dt_ideal
@@ -158,9 +155,9 @@ contains
       dt_2 = dt_old/2._wp
 
       ! Do one full step with current stepsize (t -> t+dt)
-      call timestep(htest1, Ptest1, h_res_test1, h_old,  Q, dt_old)
+      call timestep(htest1, Ptest1, h_res_test1, h_old , Q, dt_old)
       ! Do two half steps with current stepsize (t -> t+dt/2 -> t+dt)
-      call timestep(htest2, Ptest2, h_res_test2, h_old,  Q, dt_2)
+      call timestep(htest2, Ptest2, h_res_test2, h_old , Q, dt_2)
       call timestep(htest2, Ptest2, h_res_test2, htest2, Q, dt_2)
 
       ! Calculate the error between the two results
@@ -180,7 +177,7 @@ contains
 
          !Store the output from the current iteration and check if it's time to save a profile
          call save_iter_output(h_array, h_res_array, P_array,&
-         & h, h_res, P, t, tplot, plot_count, target_plot_times, plot_times, V_injected)
+         & h, h_res, P, t, tplot, plot_count, plot_times, V_injected)
 
          !Set the new time step
          if (toterr < errmax_t_step/2._wp) then
@@ -213,7 +210,7 @@ contains
 
             !Store the output from the current iteration and check if it's time to save a profile
             call save_iter_output(h_array, h_res_array, P_array,&
-            & h, h_res, P, t, tplot, plot_count, target_plot_times, plot_times, V_injected)
+            & h, h_res, P, t, tplot, plot_count, plot_times, V_injected)
 
             !Set the new step size
             dt_ideal = dt_min_val
@@ -242,7 +239,7 @@ contains
       real(wp), dimension(0:nx-1, 0:ny-1), intent(inout) :: ht1, Pt1, h_res
       real(wp), intent(in) :: dt_1
       real(wp), dimension(0:nx-1, 0:ny-1) :: ht2, cxp_h, cxm_h, cyp_h, cym_h, ct_h, Pt2
-      real(wp), dimension(0:nx-1, 0:ny-1) :: Forcing_term_h, h_cur, Dissolution_array
+      real(wp), dimension(0:nx-1, 0:ny-1) :: Forcing_term_h, h_cur, Dissolution_array, h_res_prev
       real(wp) :: dt_2, dt_4
       integer, dimension(0:3) :: P_iter_vals
 
@@ -270,12 +267,12 @@ contains
       call h_coefficients(ht2, Pt2, h_res, h_old, cxp_h, cxm_h, cyp_h, cym_h, ct_h)
       call ADI_x_solve(ht2, ht1, cxp_h, cxm_h, cyp_h, cym_h, ct_h, Forcing_term_h, dt_2)
 
+      h_res_prev = h_res
       call h_res_update(h_res,ht2,ht1,dt_2)
-
-
+      
 
       ! -- y: t+dt/2 -> t+dt/2 + dt/4 ------------------------------------------------
-      Dissolution_array = merge(1._wp, 0._wp, (ht1 > 0._wp) .and. (h_res <= 0._wp) )
+      Dissolution_array = merge(1._wp, 0._wp, (ht2 > 0._wp) .and. (h_res <= 0._wp) )
       Forcing_term_h = Q/(dx*dy) - q_dissolve*Dissolution_array
 
       call Pressure_solve(Pt1, Pt2, ht2, Q, P_iter_vals(2))
@@ -283,17 +280,16 @@ contains
       call ADI_y_solve(ht1, ht2, cxp_h, cxm_h, cyp_h, cym_h, ct_h, Forcing_term_h, dt_4)
 
 
-
       ! -- y: t+dt/2 -> t+dt/2 + dt/2 ------------------------------------------------
-      Dissolution_array = merge(1._wp, 0._wp, (ht1 > 0._wp) .and. (h_res <= 0._wp) )
+      Dissolution_array = merge(1._wp, 0._wp, (ht2 > 0._wp) .and. (h_res <= 0._wp) )
       Forcing_term_h = Q/(dx*dy) - q_dissolve*Dissolution_array
 
       call Pressure_solve(Pt1, Pt2, ht1, Q, P_iter_vals(3))
       call h_coefficients(ht1, Pt1, h_res, h_cur, cxp_h, cxm_h, cyp_h, cym_h, ct_h)
       call ADI_y_solve(ht1, ht2, cxp_h, cxm_h, cyp_h, cym_h, ct_h, Forcing_term_h, dt_2)
 
-      call h_res_update(h_res,ht1,ht2,dt_2)
-
+      h_res_prev = h_res
+      call h_res_update(h_res,ht1,ht2,dt_2)     
 
    end subroutine timestep
 
@@ -600,6 +596,7 @@ contains
       real(wp) :: sigma
 
       sigma = C_sat*(1._wp-s_a_i-s_c_r)/( s_c_r + C_sat*(1._wp-s_c_r))
+      ! sigma = C_sat*(1._wp-s_a_i-s_c_r)/( (1._wp-C_sat)*s_c_r )
       C_dissolve = 1._wp / (poro_h*( s_c_r + C_sat*(1._wp-s_c_r) ))
 
       !Locations where h is increasing, h is decreasing,
@@ -610,11 +607,11 @@ contains
 
 
       h_res = h_res + &
-      &        (h_cur-h_prev)*( -h_inc_array*R_trap_array + (sigma-1._wp)*h_dec_array ) + &
+      &        (h_cur-h_prev)*( (-1._wp)*h_inc_array*R_trap_array + (sigma-1._wp)*h_dec_array ) + &
       &        ( - C_dissolve * q_dissolve * dt_val * R_trap_array )
 
       ! Impose that h_res = 0 at the boundaries.
-      ! ** This is current a fix to avoid occasional spurious behaviour at the edges! **
+      ! ** This is currently a fix to avoid occasional spurious behaviour at the edges! **
       h_res(0,:)     = 0._wp
       h_res(nx-1,:)  = 0._wp
       h_res(:,0)     = 0._wp
@@ -887,17 +884,17 @@ contains
 
    ! ------------------------------------------------------------------------
    function err(Fa, Fb)
-      !This function calculates the L2 error between two arrays. 
-      !This is normalised (if possible) by the maximum value of 
-      !one of the two arrays to give a measure of the relative error. 
+      !This function calculates the L2 error between two arrays.
+      !This is normalised (if possible) by the maximum value of
+      !one of the two arrays to give a measure of the relative error.
 
       implicit none
       real(wp), dimension(0:nx-1, 0:ny-1), intent(in) :: Fa, Fb
       real(wp) :: err, scale
 
       !Determine the scale to normalise the error by. If one of the two
-      !arrays is sufficiently close to 0, then set the scale to 1 - then 
-      !the error value will only be small if the other array is also 
+      !arrays is sufficiently close to 0, then set the scale to 1 - then
+      !the error value will only be small if the other array is also
       !close to zero
       scale = maxval(abs(Fb))
       if (abs(scale) .le. 1e-8_wp) then
@@ -909,20 +906,18 @@ contains
 
    end function err
 
-
    ! ------------------------------------------------------------------------
    subroutine save_iter_output(h_array, h_res_array, P_array, h_cur, h_res_cur, P_cur, &
-   & t, tplot, plot_count, target_plot_times, plot_times, V_injected)
+   & t, tplot, plot_count, plot_times, V_injected)
       !This subroutine calculates the the active and trapped volumes of CO2 after each
       !successful timestep, and saves them to an output file.
-      !If the timestepping routine has also passed a planned output time, the calculated 
+      !If the timestepping routine has also passed a planned output time, the calculated
       !profiles h, h_res, and P are saved into their respective output arrays.
 
       implicit none
       real(wp), dimension(0:nx-1, 0:ny-1, 0:np-1), intent(inout) :: h_array, h_res_array, P_array
       real(wp), dimension(0:nx-1, 0:ny-1), intent(in) :: h_cur, h_res_cur, P_cur
       real(wp), dimension(0:np-1), intent(inout) :: plot_times
-      real(wp), dimension(0:np-1), intent(in) :: target_plot_times
       real(wp), intent(inout) :: tplot
       real(wp), intent(in) :: t, V_injected
       integer, intent(inout) :: plot_count
@@ -931,6 +926,7 @@ contains
       ! calculate and record the volumes of Active CO2, Trapped CO2, and total injected CO2
       V_active    = sum( poro_h(:, :)*h_cur(:, :) )*(1._wp - s_a_i)*dx*dy
       V_trapped   = sum( poro_h(:, :)*(h_res_cur(:,:)) )*s_c_r*dx*dy
+
       write (99, *) t, V_active, V_trapped, V_injected
 
 
@@ -960,9 +956,9 @@ contains
 
    ! ------------------------------------------------------------------------
    subroutine generate_flux_array(Q_array,flux_idx_cur,t_val)
-      !This subroutine calculates the current flux profile, based on the 
+      !This subroutine calculates the current flux profile, based on the
       !piecewise flux values in Q_flux_vals and the injection locations in
-      !Q_inj_locs. Each row of Q_flux_vals specifies a new flux value for 
+      !Q_inj_locs. Each row of Q_flux_vals specifies a new flux value for
       !each of the injection locations at a given time in t_flux_vals.
       !
       !n_inj_locs, n_flux_times, Q_inj_locs, Q_flux_vals, and t_flux_vals
@@ -987,7 +983,7 @@ contains
          flux_idx_cur = n_flux_times-1
 
       else
-         !Calculate the index of the most recent specified flux time 
+         !Calculate the index of the most recent specified flux time
          !in t_flux_vals before the current time t.
          !Start at the previous index value to save excessive counting.
          k = flux_idx_cur
