@@ -1,0 +1,5 @@
+-- grid parameters: nx, ny, dx, dy --
+200
+200
+0.3
+0.3

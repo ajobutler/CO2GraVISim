@@ -1,0 +1,5 @@
+-- This folder is used for storing the Current Pressure output 
+-- after a run of CO2GraVISim.
+-- Before it is run for the first time, this folder will be empty.
+-- This file is used to make the folder non-empty, so that it will 
+-- appear in the Git folder structure.
