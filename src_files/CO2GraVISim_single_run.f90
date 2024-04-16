@@ -18,9 +18,6 @@ program CO2GraVISim_single_run
    character(1000)  :: arg
 
    !Output files
-   character(1000)  ::  h_output_file          !Default is "./Output/Current_Thickness/h_n.txt"       for n=0,1,...
-   character(1000)  ::  h_res_output_file      !Default is "./Output/Current_Thickness/h_res_n.txt"   for n=0,1,...
-   character(1000)  ::  P_output_file          !Default is "./Output/Current_Pressure/P_n.txt"        for n=0,1,...   
    character(1000)  ::  output_times_file      !Default is "./Output/Other/plot_times.txt"
    character(1000)  ::  param_output_file      !Default is "./Output/Other/parameter_values.txt"
    character(1000)  ::  inj_locs_output_file   !Default is "./Output/Other/injection_locations.txt"
@@ -101,46 +98,16 @@ program CO2GraVISim_single_run
    write(*,*) 'Saving outputs'
 
    !Save arrays that contain a different slice for each plot time
-   write(*,*) ' - saving mobile current profiles'
-   do j_p = 0, np-1
-
-      write(h_output_file, '( A , "/Current_Thickness/h", I2.2, ".txt")') trim(output_folder), j_p
-
-      open (newunit=io, file=h_output_file, action='write')
-      do j_y = 0, ny-1
-         write(io, *) h_array(:,j_y,j_p)
-      end do
-      close(io)
-
-   end do
+   write(*,*) ' - saving mobile current thickness profiles'
+   call save_profile_array(h_array,"/Current_Thickness/h")
 
 
-   write(*,*) ' - saving trapped current profiles'
-   do j_p = 0, np-1
-
-      write(h_res_output_file, '( A , "/Current_Thickness/h_res", I2.2, ".txt")') trim(output_folder), j_p
-
-      open (newunit=io, file=h_res_output_file, action='write')
-      do j_y = 0, ny-1
-         write(io, *) h_res_array(:,j_y,j_p)
-      end do
-      close(io)
-
-   end do
+   write(*,*) ' - saving trapped current thickness profiles'
+   call save_profile_array(h_res_array,"/Current_Thickness/h_res")
 
 
    write(*,*) ' - saving ambient pressure profiles'
-   do j_p = 0, np-1
-
-      write(P_output_file, '( A , "/Current_Pressure/P", I2.2, ".txt")') trim(output_folder), j_p
-
-      open (newunit=io, file=P_output_file, action='write')
-      do j_y = 0, ny-1
-         write(io, *) P_array(:,j_y,j_p)
-      end do
-      close(io)
-
-   end do
+   call save_profile_array(P_array,"/Current_Pressure/P")
 
 
    write(*,*) ' - saving plot times'
@@ -178,5 +145,28 @@ program CO2GraVISim_single_run
 
 
    write(*,*) 'Run complete.'
+
+   contains
+
+   subroutine save_profile_array(Array,target_folder)
+
+      implicit none
+      real(wp), dimension(0:nx-1,0:ny-1,0:np-1), intent(in) :: Array
+      character(len=*), intent(in) :: target_folder
+      character(1000) :: f_output_file
+   
+      do j_p = 0, np-1
+
+         write(f_output_file, '( A , A, I2.2, ".txt")') trim(output_folder), trim(target_folder), j_p
+   
+         open (newunit=io, file=f_output_file, action='write')
+         do j_y = 0, ny-1
+            write(io, *) Array(:,j_y,j_p)
+         end do
+         close(io)
+   
+      end do
+
+   end subroutine save_profile_array
 
 end program CO2GraVISim_single_run
