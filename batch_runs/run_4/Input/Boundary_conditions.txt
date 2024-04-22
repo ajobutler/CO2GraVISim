@@ -1,8 +1,0 @@
--- Set the parameter values for the BCs, first --
--- for the current thickness h, then for the   --
--- ambient pressure P. Specify for the North,  -- 
--- East, South, and West sides of the domain.  --
--- Dirichlet BCs (f=0) are labelled by 1,      --
--- Neumann BCs (df/dn = 0) by 2.               --
-2 1 1 1
-2 1 1 1
