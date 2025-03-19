@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="http://www.eminerals.org/XSLT/display.xsl" type="text/xsl" ?>
+<cml xmlns="http://www.xml-cml.org/schema" >
+
+<!-- CO2GraVISim input file for Sleipner dataset -->
+
+<!-- Grid parameters -->
+<!-- Units: dx, dy [m] -->
+<grid_parameters>
+	<nx>64</nx>
+	<ny>118</ny>
+	<nz>58</nz>
+	<dx>50.0</dx>
+	<dy>50.0</dy>
+</grid_parameters>
+
+<!-- Boundary conditions -->
+<!-- Flags: 1 for Dirichlet BC (f=0), 2 for Neumann BC (df/dn = 0) -->
+<boundary_conditions>
+	<!-- Boundary conditions for the mobile current thickness, h -->
+  <current_thickness>
+    <north>1</north>
+    <east>1</east>
+    <south>1</south>
+    <west>1</west>
+  </current_thickness>
+  <!-- Boundary conditions for the dynamic ambient pressure, P_a -->
+  <ambient_pressure>
+    <north>1</north>
+    <east>1</east>
+    <south>1</south>
+    <west>1</west>
+  </ambient_pressure>
+</boundary_conditions>
+
+<!-- Flow parameters -->
+<flow_parameters>
+	<!-- CO2 density [kg m^-3] -->
+	<rho_c>810.</rho_c>
+	<!-- Unsaturated ambient density [kg m^-3] -->
+  <rho_a_unsat>1030.</rho_a_unsat>
+  <!-- Saturated ambient density [kg m^-3] -->
+  <rho_a_sat>1042.</rho_a_sat>
+  <!-- CO2 viscosity [Pa s] -->
+  <mu_c>7e-5</mu_c>
+  <!-- Ambient viscosity [Pa s] -->
+  <mu_a>9e-4</mu_a>
+  <!-- CO2 residual trapping saturation [-] -->
+  <s_c_r>0.36</s_c_r>
+  <!-- Ambient irreducible saturation [-] -->
+  <s_a_i>0.2</s_a_i>
+  <!-- Relative permeability of CO2 in mobile region [-] -->
+  <krn_mobile>1.0</krn_mobile>
+  <!-- Relative permeability of ambient in trapping region [-] -->
+  <krw_residual>1.0</krw_residual>
+  <!-- Volume fraction of CO2 in saturated ambient [-] -->
+  <C_sat>0.04</C_sat>
+  <!-- Gravitational acceleration [m s^-2] -->
+  <g>9.81</g>
+  <!-- Molecular diffusivity of CO2 in ambient [m^2 s^-1] -->
+  <D_mol>2e-9</D_mol>
+  <!-- Ratio of vertical to horizontal absolute permeability [-] -->
+  <perm_ratio>0.1</perm_ratio>
+  <!-- Control prefactor for convective dissolution [-] -->
+  <omega_conv>0.</omega_conv>
+</flow_parameters>
+
+<!-- Injection locations -->
+<!-- i,j indices of each injection location, with id tags used by <injection_schedule> -->
+<injection_locations>
+  <location id="loc1">
+    <i>50</i>
+    <j>90</j>
+  </location>
+  <!-- <location id="loc1">
+    <i>31</i>
+    <j>43</j>
+  </location> -->
+</injection_locations>
+
+<!-- Injection Schedule -->
+<!-- Times when the injection flux changes, and the corresponding reservoir-level flux values for each injection location as labelled in <injection_locations> -->
+<!-- Units: times [days], fluxes [m^3 s^-1] -->
+<injection_schedule>
+	<schedule>
+		<time>0.0</time>
+		<location id="loc1">
+			<rate>0.008</rate>
+		</location>
+	</schedule>
+	<schedule>
+		<time>1096.</time>
+		<location id="loc1">
+			<rate>0</rate>
+		</location>
+	</schedule>
+</injection_schedule>
+
+<!-- Plot times -->
+<!-- Units: days -->
+<plot_times>
+	<time>      0.0000000</time>
+	<time>    365.0000000</time>
+	<time>    730.0000000</time>
+	<time>   1096.0000000</time>
+	<time>   1461.0000000</time>
+	<time>   1826.0000000</time>
+	<time>   2191.0000000</time>
+	<time>   2557.0000000</time>
+	<time>   2922.0000000</time>
+	<time>   3287.0000000</time>
+	<time>   3652.0000000</time>
+	<time>   4018.0000000</time>
+	<time>   4383.0000000</time>
+	<time>   4748.0000000</time>
+	<time>   5113.0000000</time>
+	<time>   5479.0000000</time>
+	<time>   5844.0000000</time>
+	<time>   6209.0000000</time>
+	<time>   6574.0000000</time>
+	<time>   6940.0000000</time>
+	<time>   7305.0000000</time>
+	<time>   7670.0000000</time>
+	<time>   8035.0000000</time>
+	<time>   8401.0000000</time>
+	<time>   8766.0000000</time>
+	<time>   9131.0000000</time>
+	<time>   9496.0000000</time>
+	<time>   9862.0000000</time>
+	<!-- <time>  10227.0000000</time>
+	<time>  10592.0000000</time>
+	<time>  10957.0000000</time>
+	<time>  11688.0000000</time>
+	<time>  12418.0000000</time>
+	<time>  13149.0000000</time>
+	<time>  13879.0000000</time>
+	<time>  14610.0000000</time>
+	<time>  16436.0000000</time>
+	<time>  18262.0000000</time>
+	<time>  20089.0000000</time>
+	<time>  21915.0000000</time>
+	<time>  23741.0000000</time>
+	<time>  25567.0000000</time>
+	<time>  29219.0000000</time>
+	<time>  32871.0000000</time>
+	<time>  36524.0000000</time>
+	<time>  40176.0000000</time>
+	<time>  43829.0000000</time>
+	<time>  47481.0000000</time>
+	<time>  51134.0000000</time>
+	<time>  54786.0000000</time>
+	<time>  58439.0000000</time>
+	<time>  62091.0000000</time>
+	<time>  69395.0000000</time>
+	<time>  76700.0000000</time>
+	<time>  84005.0000000</time>
+	<time>  91310.0000000</time>
+	<time>  98615.0000000</time>
+	<time> 105919.0000000</time>
+	<time> 113224.0000000</time>
+	<time> 120529.0000000</time>
+	<time> 127834.0000000</time>
+	<time> 135139.0000000</time>
+	<time> 153402.0000000</time>
+	<time> 171664.0000000</time>
+	<time> 189926.0000000</time>
+	<time> 208188.0000000</time>
+	<time> 226450.0000000</time>
+	<time> 244712.0000000</time>
+	<time> 262974.0000000</time>
+	<time> 281236.0000000</time>
+	<time> 299499.0000000</time>
+	<time> 317761.0000000</time>
+	<time> 336023.0000000</time>
+	<time> 354285.0000000</time>
+	<time> 372547.0000000</time>
+	<time> 390809.0000000</time>
+	<time> 409071.0000000</time>
+	<time> 427333.0000000</time>
+	<time> 445596.0000000</time>
+	<time> 463858.0000000</time>
+	<time> 482120.0000000</time>
+	<time> 500382.0000000</time>
+	<time> 518644.0000000</time>
+	<time> 536906.0000000</time>
+	<time> 555168.0000000</time>
+	<time> 573430.0000000</time>
+	<time> 591693.0000000</time>
+	<time> 609955.0000000</time>
+	<time> 628217.0000000</time>
+	<time> 646479.0000000</time>
+	<time> 664741.0000000</time>
+	<time> 683003.0000000</time>
+	<time> 701265.0000000</time>
+	<time> 719527.0000000</time> -->
+</plot_times>
+
+
+<!-- Simulator Parameters -->
+<simulator_parameters>
+    <!-- Maxmimum number of attempted timesteps that the simulator can perform [integer] -->
+	<!-- Default value: max_iterations = 1e9 -->
+    <!-- <max_iterations>1e9</max_iterations> -->
+    
+    <!-- Maximum nondimensional time that the simulator can run until [real] -->
+	<!-- Default value: tmax = 1e9 -->
+    <!-- <max_time>1e9</max_time>  -->
+    
+    <!-- Initial nondimensional step size [real] -->
+	<!-- Default value: dt_init = 1e-5 -->
+    <!-- <dt_initial>1e-5</dt_initial> -->
+    
+    <!-- Minimum nondimensional step size [real] -->
+	<!-- Default value: dt_min = 1e-8 -->
+    <!-- <dt_minimum>1e-8</dt_minimum> -->
+    
+    <!-- Error threshold for timestepping routine [real] -->
+	<!-- Default value: errmax_t_step  = 1e-5 -->
+    <!-- <t_error_threshold>1e-5</t_error_threshold> -->
+    
+    <!-- Error threshold for iterative pressure solver [real] -->
+	<!-- Default value: errmax_P_iter  = 5e-4 -->
+    <!-- <P_error_threshold>5e-4</P_error_threshold> -->
+    
+    <!-- Relaxation parameter for iterative pressure solver [real, 0<omega<2] -->
+	<!-- Default value: P_iter_omega   = 1.96 -->
+    <!-- <P_iter_omega>1.96</P_iter_omega> -->
+    
+    <!-- Interval between convergence checks for iterative pressure solver [integer] -->
+	<!-- Default value: P_iter_check   = 10 -->
+    <!-- <P_iter_check>10</P_iter_check> -->  
+</simulator_parameters>
+
+</cml>
