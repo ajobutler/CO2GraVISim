@@ -1,0 +1,6 @@
+-- n_flux_vals - no. of times the injection flux is adjusted, --
+-- followed by t, Q_1(t), ..., Q_n(t), where n is the no. of  --
+-- injection points specified in Injection_points.txt         --
+2
+0 3.162
+0.3162 0
