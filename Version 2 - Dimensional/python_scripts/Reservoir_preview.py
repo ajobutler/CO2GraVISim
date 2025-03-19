@@ -233,7 +233,7 @@ def main():
     print("")
     print("------------------------------")
     print(
-        f"""Reservoir Thickness: \n
+        f"""Reservoir Vertical Extent [m]: \n
     - Min  = {np.amin(D0):f}, \n
     - Max  = {np.amax(D0):f}, \n
     - Mean = {np.mean(D0):f}
@@ -241,7 +241,7 @@ def main():
     )
     print("------------------------------")
     print(
-        f"""Porosity: \n
+        f"""Porosity [-]: \n
     - Min  = {np.amin(Porosity):f}, \n
     - Max  = {np.amax(Porosity):f}, \n
     - Mean = {np.mean(Porosity):f}
@@ -249,7 +249,7 @@ def main():
     )
     print("------------------------------")
     print(
-        f"""Permeability: \n
+        f"""Permeability [mD]: \n
     - Min  = {np.amin(Permeability):f}, \n
     - Max  = {np.amax(Permeability):f}, \n
     - Mean = {np.mean(Permeability):f}
@@ -266,6 +266,9 @@ def main():
     colmap_base = cm.seismic
     norm_base = colors.Normalize(np.min(B0), np.max(B0))
 
+    colmap_D0 = cm.Blues
+    norm_D0 = colors.Normalize(np.min(D0), np.max(D0))
+
     colmap_perm = cm.gray
     norm_perm = colors.Normalize(0.0, np.max(Permeability))
 
@@ -280,11 +283,15 @@ def main():
     n_layers = 1  # 4
     layer_indices = evenly_spaced_layers(nz, n_layers)
 
-    fig = plt.figure(figsize=(10, 6))
-    gs = GridSpec(2, 2, figure=fig)
+    fig = plt.figure(figsize=(12, 8))
+    # gs = GridSpec(2, 2, figure=fig)
+
+    gs = GridSpec(2, 1, figure=fig)
+    gs_top = gs[0].subgridspec(1,3)
+    gs_bot = gs[1].subgridspec(1,2)
 
     # -- Ceiling Topography -----------------------------------------------------------------
-    ax_c = fig.add_subplot(gs[0, 0])
+    ax_c = fig.add_subplot(gs_top[0]) #gs[0, 0])
 
     # Contours of ceiling topography
     cont_H0 = ax_c.contour(X_grid, Y_grid, H0, colors="gray", alpha=0.25, levels=10)
@@ -309,11 +316,11 @@ def main():
     # Add a colourbar
     m = cm.ScalarMappable(cmap=colmap_base, norm=norm_base)
     m.set_array(H0)
-    axins = inset_axes(ax_c, width="5%", height="100%", loc="right", borderpad=-6)
+    axins = inset_axes(ax_c, width="5%", height="100%", loc="right", borderpad= -2)
     fig.colorbar(m, cax=axins, orientation="vertical", format=FuncFormatter(cbar_fmt))
 
     # -- Basement Topography ----------------------------------------------------------------
-    ax_c = fig.add_subplot(gs[0, 1])
+    ax_c = fig.add_subplot(gs_top[1]) #gs[0, 1])
 
     # Contours of basement topography
     cont_B0 = ax_c.contour(X_grid, Y_grid, B0, colors="gray", alpha=0.25, levels=10)
@@ -337,77 +344,44 @@ def main():
 
     # Add a colourbar
     m = cm.ScalarMappable(cmap=colmap_base, norm=norm_base)
-    m.set_array(H0)
-    axins = inset_axes(ax_c, width="5%", height="100%", loc="right", borderpad=-6)
+    m.set_array(B0)
+    axins = inset_axes(ax_c, width="5%", height="100%", loc="right", borderpad= -2)
     fig.colorbar(m, cax=axins, orientation="vertical", format=FuncFormatter(cbar_fmt))
 
-    # # # # -- Porosity --------------------------------------------------------------------------
-    # # # ax_c = fig.add_subplot(gs[0, 1])
 
-    # # # # Surface plot of the Porosity array
-    # # # im_c = ax_c.imshow(
-    # # #     np.flipud(np.transpose(np.squeeze(Porosity[:, :, 0]))),
-    # # #     cmap=colmap_poro,
-    # # #     norm=norm_poro,
-    # # #     extent=[X_grid[0], X_grid[-1], Y_grid[0], Y_grid[-1]],
-    # # # )
+    # -- Reservoir Vertical Extent ----------------------------------------------------------------
+    ax_c = fig.add_subplot(gs_top[2]) #gs[0, 1])
 
-    # # # # Plot the injection locations
-    # # # for k in range(0, n_inj_locs):
-    # # #     ax_c.plot(inj_grid_vals[k, 0], inj_grid_vals[k, 1], "mx")
+    # Contours of the vertical extent of the storage interval
+    cont_D0 = ax_c.contour(X_grid, Y_grid, D0, colors="gray", alpha=0.25, levels=10)
+    ax_c.imshow(
+        np.flipud(D0),
+        cmap=colmap_D0,
+        norm=norm_D0,
+        extent=[X.min(), X.max(), Y.min(), Y.max()],
+    )
 
-    # # # ax_c.set_title("Porosity")
-    # # # ax_c.set_xlabel(r"$x$", fontsize=20)
-    # # # ax_c.set_ylabel(r"$y$", fontsize=20, rotation=0)
+    # Plot the injection locations
+    for k in range(0, n_inj_locs):
+        ax_c.plot(inj_grid_vals[k, 0], inj_grid_vals[k, 1], "ko")
 
-    # # # # Add a colourbar, and make it the same height as the surface plot
-    # # # divider = make_axes_locatable(ax_c)
-    # # # cax_c = divider.append_axes("right", size="5%", pad=0.05)
+    # Labels for the contour maps
+    ax_c.clabel(cont_D0, inline=True, fmt="D0 = %.2g", fontsize=10)
 
-    # # # cbar_poro = plt.colorbar(
-    # # #     im_c,
-    # # #     ax=ax_c,
-    # # #     cmap=colmap_poro,
-    # # #     norm=norm_poro,
-    # # #     cax=cax_c,
-    # # #     format=FuncFormatter(cbar_fmt),
-    # # # )
+    ax_c.set_title("Reservoir Vertical Extent")
+    ax_c.set_xlabel(r"$x$", fontsize=20)
+    ax_c.set_ylabel(r"$y$", fontsize=20, rotation=0)
 
-    # # # # -- Permeability ----------------------------------------------------------------
-    # # # ax_c = fig.add_subplot(gs[1, 1])
+    # Add a colourbar
+    m = cm.ScalarMappable(cmap=colmap_D0, norm=norm_D0)
+    m.set_array(D0)
+    axins = inset_axes(ax_c, width="5%", height="100%", loc="right", borderpad= -2)
+    fig.colorbar(m, cax=axins, orientation="vertical", format=FuncFormatter(cbar_fmt))
 
-    # # # # Surface plot of the Permeability array
-    # # # im_c = ax_c.imshow(
-    # # #     np.flipud(np.transpose(np.squeeze(Permeability[:, :, 0]))),
-    # # #     cmap=colmap_perm,
-    # # #     norm=norm_perm,
-    # # #     extent=[X_grid[0], X_grid[-1], Y_grid[0], Y_grid[-1]],
-    # # # )
 
-    # # # # Plot the injection locations
-    # # # for k in range(0, n_inj_locs):
-    # # #     ax_c.plot(inj_grid_vals[k, 0], inj_grid_vals[k, 1], "mx")
+    # -- Porosity --------------------------------------------------------------------------
 
-    # # # ax_c.set_title("Permeability")
-    # # # ax_c.set_xlabel(r"$x$", fontsize=20)
-    # # # ax_c.set_ylabel(r"$y$", fontsize=20, rotation=0)
-
-    # # # # Add a colourbar, and make it the same height as the surface plot
-    # # # divider = make_axes_locatable(ax_c)
-    # # # cax_c = divider.append_axes("right", size="5%", pad=0.05)
-
-    # # # cbar_perm = plt.colorbar(
-    # # #     im_c,
-    # # #     ax=ax_c,
-    # # #     cmap=colmap_perm,
-    # # #     norm=norm_perm,
-    # # #     cax=cax_c,
-    # # #     format=FuncFormatter(cbar_fmt),
-    # # # )
-
-    ##########################################################################################
-
-    ax_c = fig.add_subplot(gs[1, 0], projection="3d")
+    ax_c = fig.add_subplot(gs_bot[0], projection="3d") # gs[1, 0]
 
     for k in layer_indices:
         fcolors_poro = generate_colourmap(Porosity[:, :, k], colmap_poro, np.min(Porosity), np.max(Porosity))
@@ -472,9 +446,9 @@ def main():
 
     fig.colorbar(m, cax=axins, orientation="vertical", format=FuncFormatter(cbar_fmt))
 
-    ##########################################################################################
+    # -- Permeability ----------------------------------------------------------------
 
-    ax_c = fig.add_subplot(gs[1, 1], projection="3d")
+    ax_c = fig.add_subplot(gs_bot[1], projection="3d") #gs[1, 1]
 
     for k in layer_indices:
         fcolors_perm = generate_colourmap(
