@@ -1,4 +1,0 @@
--- n_inj_locs - number of injection points in use, followed by --
--- x_idx, y_idx for each injection point, on separate rows     --
-1
-150 50
