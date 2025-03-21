@@ -69,13 +69,9 @@
 <!-- i,j indices of each injection location, with id tags used by <injection_schedule> -->
 <injection_locations>
   <location id="loc1">
-    <i>50</i>
-    <j>90</j>
-  </location>
-  <!-- <location id="loc1">
     <i>31</i>
     <j>43</j>
-  </location> -->
+  </location>
 </injection_locations>
 
 <!-- Injection Schedule -->
