@@ -48,8 +48,8 @@ mkdir -p "$build_dir"
 dot_mod_dir="$build_dir"
 
 # FoX Directory
-FoX_dir="../../FoX/fox-master/objs"
-#FoX_dir=""
+# FoX_dir="../../FoX/fox-master/objs"
+FoX_dir=""
 
 #Check that a value has been set for FoX_dir
 if [[ -z "$FoX_dir" ]]; then
