@@ -287,22 +287,22 @@ for k in range(0, num_run_folders):
 
     for l in range(1, n_plot):
 
+        filename = f"run_{k+1}/Output/Current_Volume/V" + "{0:02d}".format(l) + ".txt"
+
         V = np.loadtxt(
-            batch_folder / f"run_{k+1}/Output/Current_Volume/V"
-            + "{0:02d}".format(l)
-            + ".txt"
+            batch_folder / filename
         )
+
+        filename = f"run_{k+1}/Output/Current_Volume/V_res" + "{0:02d}".format(l) + ".txt"
 
         V_res = np.loadtxt(
-            batch_folder / f"run_{k+1}/Output/Current_Volume/V_res"
-            + "{0:02d}".format(l)
-            + ".txt"
+            batch_folder / filename
         )
 
+        filename = f"run_{k+1}/Output/Current_Pressure/P" + "{0:02d}".format(l) + ".txt"
+
         P = np.loadtxt(
-            batch_folder / f"run_{k+1}/Output/Current_Pressure/P"
-            + "{0:02d}".format(l)
-            + ".txt"
+            batch_folder / filename
         )
 
         # Probability of mobile CO2 above threshold
@@ -374,6 +374,17 @@ V_total_sd_array = np.sqrt(
 P_sd_array = np.sqrt(np.maximum(0.0, P_sd_array - P_mean_array**2))
 
 
+# Time scale and units
+if plot_times[-1] > 730.0:
+    # Express in terms of standard years
+    Time_scale = 365.25
+    Time_unit = "years"
+    plot_times = plot_times / Time_scale
+else:
+    Time_scale = 1.0
+    Time_unit = "days"
+
+
 ###################################################################################################
 ## Plot preparation ###############################################################################
 ###################################################################################################
@@ -439,13 +450,14 @@ for i in range(n_plot - 1, -1, -1):
 
         gs = GridSpec(2, 4, figure=fig)
 
-        str_title = "[{:02d} of {:02d}]: t = {:3.2e}".format(i, n_plot - 1, t)
+        # str_title = "[{:02d} of {:02d}]: t = {:3.2e}".format(i, n_plot - 1, t)
+        str_title = f"[{i:02d} of {n_plot - 1:02d}]: t = {t:.2f} {Time_unit}"
 
         fig.suptitle(
             str_title,
             fontsize=16,
             x=0.01,
-            y=0.98,
+            y=0.99,
             horizontalalignment="left",
             verticalalignment="top",
             bbox=dict(facecolor="none", edgecolor="black"),
