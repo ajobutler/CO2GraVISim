@@ -2,10 +2,6 @@
 
 # CO2GraVISim
 
-<!-- TODO: -->
-<!-- - python scripts -->
-<!-- - Explicitly state gfortran and python versions that I have used near the top? Also mention Numpy and other libraries? -->
-
 This is an overarching readme for the **CO<sub>2</sub>** **Gra**vity-controlled, **V**ertically **I**ntegrated **Sim**ulator, CO2GraVISim, a reduced-physics model of the flow of CO<sub>2</sub> in a confined porous reservoir.
 The model incorporates spatially variability in ceiling and basement topography, porosity, and permeability, along with residual trapping and dissolution.
 
@@ -46,6 +42,12 @@ C:\....\CO2GraVISim> build_CO2GraVISim__Windows.bat
 By default, these build files attempt to use the `gfortran` compiler to construct the executable files. The files involved in Step 0 can be modified simply to instead use a different compiler, such as `ifx`, if necessary. For instructions on installing `gfortran` on your system, see [https://fortran-lang.org/learn/os_setup/install_gfortran/](https://fortran-lang.org/learn/os_setup/install_gfortran/). The code provided here has been tested using `gfortran v14.1.0`.
 
 On Linux systems, it may be necessary to modify the read-write status of the build file in order to run it. This can be done by running `chmod 744 build_CO2GraVISim__Linux.sh` from within the relevant file path.
+
+#### FoX XML Library
+
+This version of CO2GraVISim utilises the [FoX XML library for Fortran](https://fortranwiki.org/fortran/show/FoX) to read in simulation inputs from an XML file. The appropriate FoX files thus must be included when compiling CO2GraVISim. For Windows, pre-compiled files are provided in `/src_files/FoX_files/`, with the build script set up to read from these. Alternatively, you can [obtain the FoX source files from https://github.com/andreww/fox](https://github.com/andreww/fox) and compile them directly using the provided Visual Studio project file, following the instructions here: [https://andreww.github.io/fox/Compilation.html](https://andreww.github.io/fox/Compilation.html).
+
+On Linux or Unix, the FoX source files must be downloaded from [https://github.com/andreww/fox](https://github.com/andreww/fox) and compiled using `make` or `CMake`, as described here: [https://andreww.github.io/fox/Compilation.html](https://andreww.github.io/fox/Compilation.html). The variable `FoX_dir` in the build script `build_CO2GraVISim__Linux.sh` must then be set to the appropriate path for the `/FoX/fox-master/objs` subfolder.
 
 ### Specify Inputs
 
